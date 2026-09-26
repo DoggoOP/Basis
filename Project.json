@@ -28,7 +28,13 @@
             "UIInterfaceOrientationLandscapeLeft",
             "UIInterfaceOrientationLandscapeRight"
           ],
-          "UIUserInterfaceStyle": "Dark"
+          "UIUserInterfaceStyle": "Dark",
+          "NSCameraUsageDescription": "Basis Probe uses motion tracking to turn this iPhone into a vector in 3D space. No camera images are shown or stored.",
+          "NSLocalNetworkUsageDescription": "Basis connects the probe iPhone to the Duo so a real vector can stream into the lessons.",
+          "NSBonjourServices": [
+            "_basis-probe._tcp",
+            "_basis-probe._udp"
+          ]
         }
       },
       "platform": "iOS",

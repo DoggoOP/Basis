@@ -22,15 +22,13 @@ private struct DeviceHingeReader: ViewModifier {
           model.useSimulatedHinge()
           return
         }
-        // Calibration: verify on the Duo simulator that fully open reports 180°
-        // and a right-angle pose reports 90°. If the API reports the fold angle
-        // instead (0° flat), use `180 - hinge.angle.degrees` here.
         let status: HingeModel.Status = switch hinge.status {
         case .closed: .closed
         case .fullyOpen: .fullyOpen
         default: .partiallyOpen
         }
-        model.receiveDeviceReading(openingDegrees: hinge.angle.degrees, status: status)
+        let raw = hinge.angle.degrees
+        model.receiveDeviceReading(openingDegrees: HingeCalibration.openingDegrees(fromRaw: raw), rawDegrees: raw, status: status)
       }
     } else {
       content

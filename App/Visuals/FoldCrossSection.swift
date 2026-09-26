@@ -19,7 +19,7 @@ struct FoldCrossSection: View {
         style: StrokeStyle(lineWidth: 4, lineCap: .round, lineJoin: .round)
       )
       decorate(&context, frame)
-      context.drawDot(at: frame.hinge, radius: 5, color: MathPalette.axis)
+      context.drawDot(at: frame.hinge, radius: 5, color: Theme.hinge)
     }
     .accessibilityHidden(true)
   }

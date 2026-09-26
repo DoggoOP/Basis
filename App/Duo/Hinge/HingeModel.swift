@@ -21,6 +21,13 @@ final class HingeModel {
   private(set) var source: Source = .simulated
   private(set) var status: Status = .partiallyOpen
   private(set) var openingDegrees: Double = 125
+  /// The last raw reading from the device API, kept for calibration checks.
+  private(set) var rawDeviceDegrees: Double?
+
+  /// α with the subtle snap to exactly 90° that every lesson displays.
+  var snappedDegrees: Double { MathTolerance.snappedOpening(openingDegrees) }
+
+  var isDeviceHingeAvailable: Bool { source == .device }
 
   /// The nearest mathematically special angle, if α is currently at one.
   var landmark: AngleLandmark? { AngleLandmark(openingDegrees: openingDegrees) }
@@ -36,7 +43,8 @@ final class HingeModel {
   }
 
   /// Feeds a reading from the device hinge, already converted to the opening convention.
-  func receiveDeviceReading(openingDegrees reading: Double, status: Status) {
+  func receiveDeviceReading(openingDegrees reading: Double, rawDegrees: Double, status: Status) {
+    rawDeviceDegrees = rawDegrees
     let clamped = min(max(reading, 0), 180)
     if source == .simulated || status != .partiallyOpen {
       openingDegrees = clamped
@@ -50,6 +58,11 @@ final class HingeModel {
   /// Returns to the simulated hinge, e.g. when the device reports no hinge.
   func useSimulatedHinge() {
     source = .simulated
+  }
+
+  /// Jumps the simulated hinge to a demo pose.
+  func setSimulatedPose(_ degrees: Double) {
+    simulatedDegrees = degrees
   }
 
   private static func status(for degrees: Double) -> Status {
@@ -70,7 +83,7 @@ enum AngleLandmark: Equatable {
       (.parallel, 0, 1),
       (.fortyFive, 45, 1),
       (.sixty, 60, 1),
-      (.orthogonal, 90, BasisState.orthogonalSnap),
+      (.orthogonal, 90, MathTolerance.orthogonalSnapDegrees),
       (.oneTwenty, 120, 1),
       (.oneThirtyFive, 135, 1),
       (.flat, 180, 1),

@@ -31,7 +31,7 @@ struct DualPanelLayout<Leading: View, Spine: View, Trailing: View>: View {
         }
       }
     }
-    .background(MathPalette.panelBackground)
+    .background(Theme.background)
   }
 
   static func hingeIsVertical(for size: CGSize) -> Bool {
@@ -50,7 +50,7 @@ struct DualPanelLayout<Leading: View, Spine: View, Trailing: View>: View {
   private func spineContainer(edge: HingeEdge) -> some View {
     spine
       .frame(maxWidth: .infinity, maxHeight: .infinity)
-      .background(MathPalette.spineBackground)
+      .background(Theme.spine)
       .environment(\.hingeEdge, edge)
   }
 }

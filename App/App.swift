@@ -1,10 +1,17 @@
 import SwiftUI
 
 @main
-struct AppDefinition: App {
+struct BasisApp: App {
+  @State private var hinge = HingeModel()
+  @State private var probeLink = HostPeerService()
+
   var body: some Scene {
     WindowGroup {
-      ContentView()
+      RootView()
+        .environment(hinge)
+        .environment(probeLink)
+        .readsDeviceHinge(into: hinge)
+        .preferredColorScheme(.dark)
     }
   }
 }
