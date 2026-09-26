@@ -40,8 +40,8 @@ struct ExploreHomeView: View {
           .buttonStyle(.plain)
           NavigationLink(value: Route.calibration) {
             ToolRow(
-              title: "Hinge Calibration",
-              detail: "Verify the device's angle convention",
+              title: "Calibration",
+              detail: "Hinge angle convention and outer display status",
               systemImage: "angle"
             )
           }

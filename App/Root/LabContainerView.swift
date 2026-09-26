@@ -33,6 +33,7 @@ struct LabContent: View {
     case .orthogonalize: GramSchmidtLessonView()
     case .reflections: ReflectionLessonView()
     case .qubit: QuantumLessonView()
+    case .orientation: OrientationLessonView()
     case .surface: IntrinsicExtrinsicView()
     }
   }

@@ -18,6 +18,7 @@ struct MatrixLessonView: View {
         PhysicalDirectionsView {
           withAnimation(Motion.morph) { stage = .transform }
         }
+        .publishesOuterScene(.none)
       case .transform:
         UnitCircleTransformView()
       }

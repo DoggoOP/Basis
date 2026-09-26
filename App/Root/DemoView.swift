@@ -3,6 +3,7 @@ import SwiftUI
 /// The judged demo: five acts, one Next button, each act starting from a preset.
 struct DemoView: View {
   @Environment(HingeModel.self) private var hinge
+  @Environment(OuterDisplayState.self) private var outer
   @State private var coordinator = DemoCoordinator()
   @State private var explains = false
 
@@ -15,7 +16,7 @@ struct DemoView: View {
       .toolbar {
         ToolbarItem(placement: .principal) {
           VStack(spacing: 0) {
-            Text("Act \(coordinator.act.rawValue) / \(DemoAct.allCases.count)")
+            Text("Act \(coordinator.act.rawValue) / \(DemoAct.allCases.count)" + (outer.usesOuterDisplay ? " · \(coordinator.act.outerTitle)" : ""))
               .font(.caption.weight(.semibold))
               .foregroundStyle(.secondary)
             Text(coordinator.act.title)

@@ -65,6 +65,12 @@ struct MeasurementShots {
 
   func outcome(at index: Int, pPlus: Double) -> Bool { draws[index] < pPlus }
 
+  /// The latest `limit` outcomes among the first `shownShots`.
+  func recentOutcomes(shownShots: Int, pPlus: Double, limit: Int = 30) -> [Bool] {
+    let end = min(shownShots, draws.count)
+    return (max(0, end - limit)..<end).map { outcome(at: $0, pPlus: pPlus) }
+  }
+
   func plusCount(firstShots n: Int, pPlus: Double) -> Int {
     draws.prefix(n).lazy.filter { $0 < pPlus }.count
   }

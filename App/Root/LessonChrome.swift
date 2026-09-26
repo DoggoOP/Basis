@@ -13,10 +13,17 @@ private struct LessonChrome: ViewModifier {
   var explains: Bool
 
   @Environment(HingeModel.self) private var hinge
+  @Environment(OuterDisplayState.self) private var outer
 
   func body(content: Content) -> some View {
     content
       .environment(\.explainsMath, explains)
+      .overlay(alignment: .topTrailing) {
+        if outer.showsPreview {
+          OuterPreviewCard(state: outer)
+            .padding(12)
+        }
+      }
       .background(Theme.background.ignoresSafeArea())
       .safeAreaInset(edge: .bottom, spacing: 0) {
         if usesHinge && hinge.source == .simulated {

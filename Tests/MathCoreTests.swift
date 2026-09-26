@@ -95,3 +95,25 @@ struct GramSchmidtTests {
     #expect(near(q2.length, 1))
   }
 }
+
+struct OrientedFluxTests {
+  @Test(arguments: [0.0, 45, 90, 135, 180])
+  func outerFaceHasOppositeFlux(degrees: Double) {
+    let flux = OrientedFlux(openingDegrees: degrees)
+    #expect(flux.outerFlux == -flux.innerFlux)
+  }
+
+  @Test func fluxFollowsNormalAlignment() {
+    #expect(near(OrientedFlux(openingDegrees: 180).innerFlux, OrientedFlux.fieldStrength))
+    #expect(OrientedFlux(openingDegrees: 90).innerFlux == 0)
+  }
+}
+
+struct MeasurementShotsTests {
+  @Test func recentOutcomesAreTheLatestShots() {
+    let shots = MeasurementShots()
+    let recent = shots.recentOutcomes(shownShots: 50, pPlus: 0.5, limit: 10)
+    #expect(recent.count == 10)
+    #expect(recent == (40..<50).map { shots.outcome(at: $0, pPlus: 0.5) })
+  }
+}

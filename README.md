@@ -10,6 +10,17 @@ a = (1, 0, 0)    b = (cos α, 0, sin α)    h = (0, 1, 0)    B = [a b h]
 ```
 
 > The phone is not controlling the matrix. The phone is the matrix.
+>
+> **Inside is the construction. Outside is the consequence.**
+
+| Inner display | Outer display |
+|---|---|
+| physical basis a, b | B(unit circle): ellipse, σ₁, σ₂, κ |
+| fixed vector p + changing basis | coordinates B⁻¹p |
+| primal space V | dual measurement grid V* |
+| domain V | codomain W, im(A) |
+| preparation + measurement axes | shots + histogram |
+| inner normal n, flux Φ | outer normal −n, flux −Φ |
 
 ## Demo Mode (five acts, one Next button)
 
@@ -27,7 +38,23 @@ a = (1, 0, 0)    b = (cos α, 0, sin α)    h = (0, 1, 0)    B = [a b h]
    100/0, 90° gives 50/50, and the seeded shots accumulate.
 
 Explore Mode adds **Orthogonalize** (Gram–Schmidt / QR), **Reflections** (two mirror panels
-compose into a rotation by 2φ about the hinge), and **Surface** (intrinsic vs extrinsic distance).
+compose into a rotation by 2φ about the hinge), **Orientation** (the outer face's normal is −n,
+so its flux is −Φ), and **Surface** (intrinsic vs extrinsic distance).
+
+## Outer display
+
+The outer display is a second render target, not a second navigation stack. Lessons publish a
+data-only `OuterScene` through the `OuterDisplayPresenting` protocol, and `OuterSceneView` renders
+it. It has no menus, no controls, and shows one idea at a time. When the outer display is unavailable
+(or **Calibration → Outer Display → Mode** is *Inner Only*), every lesson falls back to its
+two-panel inner layout.
+
+- **iOS 27.0 SDK:** uses `ExternalNonInteractiveAccessory`, and the system decides where it appears.
+- **iOS 27.1 SDK:** add `BASIS_CAMERA_ACCESSORY` to the Swift active compilation conditions to use
+  `CameraCaptureAccessory` (the Duo Greetings pattern). A front-camera session keeps it active,
+  and its preview stays hidden behind the lesson.
+- **Outer Preview** (Calibration) shows a live copy of the outer scene on the inner display, for
+  development. Turn it off for judging.
 
 ## Architecture
 
@@ -39,6 +66,7 @@ App/
 │                ReflectionComposition, QuantumMeasurement, LinearMap, IntrinsicGeometry
 ├── Lessons/     One folder per lab
 ├── Probe/       Headless ARKit tracking + calibration (no camera view)
+├── Outer/       OuterScene, OuterDisplayState/Coordinator, accessory host, outer renderers
 ├── Networking/  Multipeer probe → Duo stream (~30 Hz JSON packets)
 └── Visuals/     Canvas helpers, theme, equations, readouts
 Tests/           Swift Testing suite for MathCore
@@ -55,7 +83,7 @@ labeled *simulated hinge* slider stands in so every lesson stays testable.
 With Xcode 27.1:
 
 1. Add `BASIS_DEVICE_HINGE` to the target's Swift active compilation conditions.
-2. Run on the iPhone Duo simulator and open **Hinge Calibration**. Record fully open, right angle,
+2. Run on the iPhone Duo simulator and open **Calibration**. Record fully open, right angle,
    and nearly closed. If the raw angle decreases as the device opens, set
    `HingeCalibration.convention = .foldAngle`.
 

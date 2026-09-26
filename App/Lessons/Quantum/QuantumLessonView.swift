@@ -4,12 +4,15 @@ import SwiftUI
 /// Prepare along n_A, measure along n_B: P(+) = (1 + n_A · n_B) / 2.
 struct QuantumLessonView: View {
   @Environment(HingeModel.self) private var hinge
+  @Environment(OuterDisplayState.self) private var outer
   @Environment(\.accessibilityReduceMotion) private var reduceMotion
   @State private var shots = MeasurementShots()
   @State private var shownShots = 0
 
   var body: some View {
     let measurement = QuantumMeasurement(openingDegrees: hinge.openingDegrees)
+    let plusCount = shots.plusCount(firstShots: shownShots, pPlus: measurement.pPlus)
+    let recent = shots.recentOutcomes(shownShots: shownShots, pPlus: measurement.pPlus)
     DualPanelLayout {
       PanelStack(spacing: 16) {
         PanelTitle("Prepare along n_A", tint: Theme.first)
@@ -24,19 +27,25 @@ struct QuantumLessonView: View {
     } trailing: {
       PanelStack(spacing: 16) {
         PanelTitle("Measure along n_B", tint: Theme.second)
-        Readout(title: "P(+)", tint: Theme.dual) {
-          Text(measurement.pPlus.percentText())
+        if outer.usesOuterDisplay {
+          // The presenter chooses the axes inside; the outside shows what nature returns.
+          Readout(title: "n_A · n_B", tint: Theme.second) {
+            Text(measurement.axisDot.signedText())
+          }
+          Text("The outcomes are on the outside.")
+            .font(.callout)
+            .foregroundStyle(.secondary)
+        } else {
+          Readout(title: "P(+)", tint: Theme.dual) {
+            Text(measurement.pPlus.percentText())
+          }
+          StateBadge(title: measurement.regime.title, tint: Theme.dual)
+          Text(measurement.regime.explanation)
+            .font(.callout)
+            .foregroundStyle(.secondary)
+          MeasurementHistogramView(pPlus: measurement.pPlus, plusCount: plusCount, shotCount: shownShots)
+          ShotStreamView(outcomes: recent)
         }
-        StateBadge(title: measurement.regime.title, tint: Theme.dual)
-        Text(measurement.regime.explanation)
-          .font(.callout)
-          .foregroundStyle(.secondary)
-        MeasurementHistogramView(
-          pPlus: measurement.pPlus,
-          plusCount: shots.plusCount(firstShots: shownShots, pPlus: measurement.pPlus),
-          shotCount: shownShots
-        )
-        ShotStreamView(shots: shots, shownShots: shownShots, pPlus: measurement.pPlus)
         Spacer(minLength: 0)
         Button("Reset Shots", systemImage: "arrow.counterclockwise") {
           shownShots = 0
@@ -44,6 +53,12 @@ struct QuantumLessonView: View {
         .buttonStyle(.bordered)
       }
     }
+    .publishesOuterScene(.quantum(QuantumState(
+      pPlus: measurement.pPlus,
+      shotCount: shownShots,
+      plusCount: plusCount,
+      recentOutcomes: recent
+    )))
     .task(id: shownShots == 0) {
       // Shots accumulate steadily from the same seeded sequence after every reset.
       while shownShots < MeasurementShots.count {
@@ -107,7 +122,7 @@ private struct EquationMorphView: View {
 }
 
 /// Theory versus the shots measured so far.
-private struct MeasurementHistogramView: View {
+struct MeasurementHistogramView: View {
   var pPlus: Double
   var plusCount: Int
   var shotCount: Int
@@ -151,16 +166,10 @@ private struct MeasurementHistogramView: View {
 }
 
 /// The most recent outcomes as a stream of + and − marks.
-private struct ShotStreamView: View {
-  var shots: MeasurementShots
-  var shownShots: Int
-  var pPlus: Double
-
-  private static let visible = 30
+struct ShotStreamView: View {
+  var outcomes: [Bool]
 
   var body: some View {
-    let start = max(0, shownShots - Self.visible)
-    let outcomes = (start..<shownShots).map { shots.outcome(at: $0, pPlus: pPlus) }
     Text(outcomes.map { $0 ? "+" : "−" }.joined(separator: " "))
       .font(.system(.body, design: .monospaced).weight(.semibold))
       .foregroundStyle(Theme.dual)

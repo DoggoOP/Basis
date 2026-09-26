@@ -6,6 +6,7 @@ struct DualityLessonView: View {
   static let vector = SIMD2(ChangeOfBasisModel.presetVector.x, ChangeOfBasisModel.presetVector.z)
 
   @Environment(HingeModel.self) private var hinge
+  @Environment(OuterDisplayState.self) private var outer
 
   var body: some View {
     let basis = BasisGeometry(openingDegrees: hinge.snappedDegrees)
@@ -15,7 +16,31 @@ struct DualityLessonView: View {
     } spine: {
       MapArrowSpine(label: "ω")
     } trailing: {
-      MeasurePanel(basis: basis, dual: dual, vector: Self.vector)
+      if outer.usesOuterDisplay {
+        PrimalBasisPanel(basis: basis)
+      } else {
+        MeasurePanel(basis: basis, dual: dual, vector: Self.vector)
+      }
+    }
+    .publishesOuterScene(.dual(DualState(openingDegrees: basis.openingDegrees, vector: Self.vector)))
+  }
+}
+
+/// With the dual grid on the outside, the inside keeps only the primal basis V.
+private struct PrimalBasisPanel: View {
+  var basis: BasisGeometry
+
+  var body: some View {
+    PanelStack(spacing: 18) {
+      PanelTitle("Primal space V", tint: Theme.second)
+      Readout(title: "Opening angle") {
+        Text(basis.openingDegrees.degreesText())
+      }
+      MatrixText(name: "B", rows: [[1, basis.cosine], [0, basis.sine]])
+      Text("The inside tells you how to build the vector. The outside tells you how to measure it.")
+        .font(.callout)
+        .foregroundStyle(.secondary)
+      Spacer(minLength: 0)
     }
   }
 }

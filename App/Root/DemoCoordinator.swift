@@ -41,6 +41,17 @@ enum DemoAct: Int, CaseIterable {
     }
   }
 
+  /// What the outer display shows during this act.
+  var outerTitle: String {
+    switch self {
+    case .matrix: "Outer = Image"
+    case .coordinates: "Outer = Coordinates"
+    case .duality: "Outer = Measurement"
+    case .maps: "Outer = Codomain"
+    case .quantum: "Outer = Outcomes"
+    }
+  }
+
   var lab: Lab {
     switch self {
     case .matrix: .matrix

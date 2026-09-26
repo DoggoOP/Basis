@@ -2,6 +2,7 @@ import SwiftUI
 
 /// Act IV: two display regions become two vector spaces, related by A.
 struct LinearMapLessonView: View {
+  @Environment(OuterDisplayState.self) private var outer
   @State private var preset = LinearMapPreset.rotate
   /// The matrix being drawn; animates between presets so shapes morph rather than swap.
   @State private var matrix = LinearMapPreset.rotate.matrix
@@ -25,12 +26,25 @@ struct LinearMapLessonView: View {
     } spine: {
       MapArrowSpine(label: "A")
     } trailing: {
-      PanelStack(spacing: 14) {
-        PanelTitle("Codomain W", tint: Theme.second)
-        CodomainView(matrix: matrix, x: x, showsImage: labeledPreset == preset)
-        MapPropertiesView(matrix: preset.matrix, isRevealed: labeledPreset == preset)
+      if outer.usesOuterDisplay {
+        // The phone is the operator: V inside, W outside.
+        PanelStack(spacing: 18) {
+          PanelTitle("Operator A", tint: Theme.second)
+          MatrixText(name: "A", rows: [[preset.matrix.m11, preset.matrix.m12], [preset.matrix.m21, preset.matrix.m22]])
+          Text("V → [ phone / A ] → W. The codomain is on the outside.")
+            .font(.callout)
+            .foregroundStyle(.secondary)
+          Spacer(minLength: 0)
+        }
+      } else {
+        PanelStack(spacing: 14) {
+          PanelTitle("Codomain W", tint: Theme.second)
+          CodomainView(matrix: matrix, x: x, showsImage: labeledPreset == preset)
+          MapPropertiesView(matrix: preset.matrix, isRevealed: labeledPreset == preset)
+        }
       }
     }
+    .publishesOuterScene(.mapImage(MapState(matrix: preset.matrix, x: x, showsLabels: labeledPreset == preset)))
     .onChange(of: preset) { _, newValue in
       withAnimation(Motion.morph) { matrix = newValue.matrix }
     }
@@ -89,7 +103,7 @@ private struct DomainView: View, Animatable {
 }
 
 /// The transformed grid, the image of the unit circle, Ax, and (for rank-deficient maps) the image.
-private struct CodomainView: View, Animatable {
+struct CodomainView: View, Animatable {
   var matrix: Matrix2
   var x: SIMD2<Double>
   var showsImage: Bool
@@ -121,7 +135,7 @@ private struct CodomainView: View, Animatable {
 }
 
 /// Rank, kernel, image, and invertibility, labeled after the geometry makes them obvious.
-private struct MapPropertiesView: View {
+struct MapPropertiesView: View {
   var matrix: Matrix2
   var isRevealed: Bool
 

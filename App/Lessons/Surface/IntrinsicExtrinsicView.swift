@@ -52,6 +52,7 @@ struct IntrinsicExtrinsicView: View {
         .allowsHitTesting(false)
       }
     }
+    .publishesOuterScene(.none)
   }
 
   private func millimeters(_ points: Double) -> String {

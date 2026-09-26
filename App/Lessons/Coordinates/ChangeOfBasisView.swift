@@ -4,6 +4,7 @@ import SwiftUI
 struct ChangeOfBasisView: View {
   @Environment(HingeModel.self) private var hinge
   @Environment(HostPeerService.self) private var probeLink
+  @Environment(OuterDisplayState.self) private var outer
   @State private var model = ChangeOfBasisModel()
 
   var body: some View {
@@ -11,6 +12,8 @@ struct ChangeOfBasisView: View {
     let probe = probeLink.latestVector
     let p = model.vector(probe: probe)
     let solve = ChangeOfBasis(basis: basis, vector: p)
+    let physicalChange = model.physicalChange(probe: probe)
+    let coefficientChange = solve.coefficientChange(for: physicalChange)
     DualPanelLayout {
       ProbeVectorPanel(model: model, basis: basis, vector: p, coefficients: solve.coefficients, probe: probe)
     } spine: {
@@ -20,11 +23,18 @@ struct ChangeOfBasisView: View {
         model: model,
         basis: basis,
         coefficients: solve.coefficients,
-        physicalChange: model.physicalChange(probe: probe),
-        coefficientChange: solve.coefficientChange(for: model.physicalChange(probe: probe)),
-        probe: probe
+        physicalChange: physicalChange,
+        coefficientChange: coefficientChange,
+        probe: probe,
+        showsCoordinates: !outer.usesOuterDisplay
       )
     }
+    .publishesOuterScene(.coordinates(CoordinateState(
+      openingDegrees: basis.openingDegrees,
+      coefficients: solve.coefficients,
+      physicalChange: physicalChange.length,
+      coefficientSwing: coefficientChange?.largestComponent
+    )))
     .onChange(of: probe) { _, newValue in model.noteProbeReading(newValue) }
     .onAppear { probeLink.start() }
   }
@@ -113,14 +123,21 @@ private struct CoordinateBarsPanel: View {
   var physicalChange: SIMD3<Double>
   var coefficientChange: SIMD3<Double>?
   var probe: SIMD3<Double>?
+  /// False when the coordinates are shown on the outer display instead.
+  var showsCoordinates: Bool
 
   var body: some View {
     PanelStack(spacing: 18) {
-      PanelTitle("Coordinates in Duo basis")
+      PanelTitle(showsCoordinates ? "Coordinates in Duo basis" : "Changing basis B(α)")
       Readout(title: "Opening angle") {
         Text(basis.openingDegrees.degreesText())
       }
-      if let c = coefficients {
+      if !showsCoordinates {
+        QualityLabel(quality: basis.quality)
+        Text("The vector is here. Its coordinates are on the outside.")
+          .font(.callout)
+          .foregroundStyle(.secondary)
+      } else if let c = coefficients {
         AlignedStack(spacing: 10) {
           CoefficientBar(label: "a", value: c.x, tint: Theme.first)
           CoefficientBar(label: "b", value: c.y, tint: Theme.second)
@@ -135,7 +152,9 @@ private struct CoordinateBarsPanel: View {
         )
         .transition(.opacity)
       }
-      SensitivityStrip(physicalChange: physicalChange, coefficientChange: coefficientChange)
+      if showsCoordinates {
+        SensitivityStrip(moved: physicalChange.length, swing: coefficientChange.map(\.largestComponent))
+      }
       Spacer(minLength: 0)
       controls
     }
@@ -164,7 +183,7 @@ private struct CoordinateBarsPanel: View {
 }
 
 /// One coordinate as a bar that grows from the center, clipped with a marker when huge.
-private struct CoefficientBar: View {
+struct CoefficientBar: View {
   var label: String
   var value: Double
   var tint: Color
@@ -204,13 +223,13 @@ private struct CoefficientBar: View {
 }
 
 /// Physical change vs coordinate change: ill-conditioning made visceral.
-private struct SensitivityStrip: View {
-  var physicalChange: SIMD3<Double>
-  var coefficientChange: SIMD3<Double>?
+struct SensitivityStrip: View {
+  /// |Δp| in meters.
+  var moved: Double
+  /// Largest coordinate change, or nil when the basis has collapsed.
+  var swing: Double?
 
   var body: some View {
-    let moved = physicalChange.length
-    let swing = coefficientChange.map { c in [c.x, c.y, c.z].max { abs($0) < abs($1) } ?? 0 }
     if moved > 0.0005 {
       HStack(spacing: 24) {
         Readout(title: "Physical change", tint: Theme.probe) {
@@ -277,5 +296,12 @@ struct ProbeStatusLabel: View {
 extension Comparable {
   func clamped(to range: ClosedRange<Self>) -> Self {
     min(max(self, range.lowerBound), range.upperBound)
+  }
+}
+
+extension SIMD3 where Scalar == Double {
+  /// The component with the largest magnitude, keeping its sign.
+  var largestComponent: Double {
+    [x, y, z].max { abs($0) < abs($1) } ?? 0
   }
 }

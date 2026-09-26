@@ -47,6 +47,7 @@ struct GramSchmidtLessonView: View {
       .animation(Motion.reveal, value: gs.q2 == nil)
     }
     .sensoryFeedback(.selection, trigger: step)
+    .publishesOuterScene(.none)
   }
 
   private var stepEquation: String {

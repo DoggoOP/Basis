@@ -51,6 +51,7 @@ struct ReflectionLessonView: View {
       .animation(Motion.reveal, value: composition.cyclicOrder)
     }
     .sensoryFeedback(.selection, trigger: appliedCount)
+    .publishesOuterScene(.none)
   }
 
   private var controls: some View {

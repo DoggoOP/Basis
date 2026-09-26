@@ -2,7 +2,8 @@ import SwiftUI
 
 /// a lives on panel A, b on panel B, and a × b lies along their physical intersection.
 struct PhysicalDirectionsView: View {
-  var revealMatrix: () -> Void
+  /// Shows a reveal button when set; otherwise B is already revealed (its image is outside).
+  var revealMatrix: (() -> Void)?
 
   @Environment(HingeModel.self) private var hinge
   @State private var isSwapped = false
@@ -44,8 +45,15 @@ struct PhysicalDirectionsView: View {
             withAnimation(Motion.step) { isSwapped.toggle() }
           }
           .buttonStyle(.bordered)
-          Button("Reveal B = [a b]", systemImage: "square.grid.2x2", action: revealMatrix)
-            .buttonStyle(.borderedProminent)
+          if let revealMatrix {
+            Button("Reveal B = [a b]", systemImage: "square.grid.2x2", action: revealMatrix)
+              .buttonStyle(.borderedProminent)
+          } else {
+            MatrixText(name: "B", rows: [[1, basis.cosine], [0, basis.sine]])
+            Text("Its image is on the outside.")
+              .font(.footnote)
+              .foregroundStyle(.secondary)
+          }
         }
       }
     }

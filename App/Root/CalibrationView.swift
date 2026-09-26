@@ -3,6 +3,7 @@ import SwiftUI
 /// Verifies the device hinge's angle convention before trusting any lesson math.
 struct CalibrationView: View {
   @Environment(HingeModel.self) private var hinge
+  @Environment(OuterDisplayState.self) private var outer
   @State private var recorded: [Pose: Double] = [:]
 
   enum Pose: String, CaseIterable, Identifiable {
@@ -22,8 +23,24 @@ struct CalibrationView: View {
   }
 
   var body: some View {
+    @Bindable var outer = outer
     Form {
-      Section("Live") {
+      Section {
+        LabeledContent("Path", value: outer.path.rawValue)
+        LabeledContent("Available", value: outer.isAvailable ? "Yes" : "No")
+        LabeledContent("Presenting", value: outer.isPresented ? "Yes" : "No, inner fallback")
+        Picker("Mode", selection: $outer.mode) {
+          ForEach(OuterDisplayState.Mode.allCases) { mode in
+            Text(mode.title).tag(mode)
+          }
+        }
+        Toggle("Outer Preview", isOn: $outer.showsPreview)
+      } header: {
+        Text("Outer Display")
+      } footer: {
+        Text("Inside is the construction; outside is the consequence. If the outer display is unreliable, choose Inner Only and every lesson uses its two-panel fallback. Turn Outer Preview off before judging.")
+      }
+      Section("Hinge") {
         LabeledContent("Source", value: hinge.source == .device ? "Device hinge" : "Simulated hinge")
         LabeledContent("Status", value: statusText)
         LabeledContent("Raw API angle", value: hinge.rawDeviceDegrees?.degreesText() ?? "—")
@@ -56,7 +73,7 @@ struct CalibrationView: View {
     }
     .scrollContentBackground(.hidden)
     .background(Theme.background.ignoresSafeArea())
-    .navigationTitle("Hinge Calibration")
+    .navigationTitle("Calibration")
     .navigationBarTitleDisplayMode(.inline)
   }
 

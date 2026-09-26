@@ -2,7 +2,7 @@ import Foundation
 
 /// The independent labs in Explore Mode.
 enum Lab: String, CaseIterable, Identifiable, Hashable {
-  case matrix, coordinates, duality, maps, orthogonalize, reflections, qubit, surface
+  case matrix, coordinates, duality, maps, orthogonalize, reflections, qubit, orientation, surface
 
   var id: Self { self }
 
@@ -15,19 +15,21 @@ enum Lab: String, CaseIterable, Identifiable, Hashable {
     case .orthogonalize: "Orthogonalize"
     case .reflections: "Reflections"
     case .qubit: "Qubit"
+    case .orientation: "Orientation"
     case .surface: "Surface"
     }
   }
 
   var subtitle: String {
     switch self {
-    case .matrix: "SVD, determinant, conditioning"
-    case .coordinates: "Change of basis + physical probe"
-    case .duality: "Build vectors vs measure vectors"
-    case .maps: "Kernel, image, rank, invertibility"
+    case .matrix: "Inner: basis · Outer: transformed unit circle, SVD, conditioning"
+    case .coordinates: "Inner: vector + changing basis · Outer: coordinates"
+    case .duality: "Inner: primal space · Outer: dual measurement space"
+    case .maps: "Inner: domain · Outer: codomain, kernel, image, rank"
     case .orthogonalize: "Gram–Schmidt / QR"
     case .reflections: "Two planes compose into a rotation"
-    case .qubit: "Measurement geometry"
+    case .qubit: "Inner: preparation + basis · Outer: measurement outcomes"
+    case .orientation: "Inner: normal n · Outer: −n and the opposite flux"
     case .surface: "Intrinsic vs extrinsic distance"
     }
   }
@@ -41,6 +43,7 @@ enum Lab: String, CaseIterable, Identifiable, Hashable {
     case .orthogonalize: "perspective"
     case .reflections: "arrow.trianglehead.left.and.right.righttriangle.left.righttriangle.right"
     case .qubit: "atom"
+    case .orientation: "arrow.up.arrow.down"
     case .surface: "point.topleft.down.to.point.bottomright.curvepath"
     }
   }
