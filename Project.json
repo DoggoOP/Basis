@@ -54,6 +54,29 @@
         }
       ],
       "type": "application"
+    },
+    "BasisTests": {
+      "type": "bundle.unit-test",
+      "platform": "iOS",
+      "deploymentTarget": "26.0",
+      "sources": [
+        {
+          "path": "Tests"
+        }
+      ],
+      "dependencies": [
+        {
+          "target": "Basis"
+        }
+      ],
+      "settings": {
+        "GENERATE_INFOPLIST_FILE": "YES",
+        "SWIFT_VERSION": "5.0",
+        "PRODUCT_BUNDLE_IDENTIFIER": "app.bitrig.new.b9290524-20a5-4d70-8b09-1920fca69e69.tests",
+        "TARGETED_DEVICE_FAMILY": "1",
+        "TEST_HOST": "$(BUILT_PRODUCTS_DIR)/Basis.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Basis",
+        "BUNDLE_LOADER": "$(TEST_HOST)"
+      }
     }
   }
 }
