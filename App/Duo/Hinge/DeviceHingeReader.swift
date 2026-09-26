@@ -12,6 +12,8 @@ private struct DeviceHingeReader: ViewModifier {
   var model: HingeModel
 
   func body(content: Content) -> some View {
+    // The hinge API ships in the iOS 27.1 SDK (SwiftUI 8.1); older SDKs use the simulated hinge.
+    #if canImport(SwiftUI, _version: 8.1)
     if #available(iOS 27.1, *) {
       content.onHingeChange { _, context in
         guard let hinge = context.hinge else {
@@ -33,5 +35,8 @@ private struct DeviceHingeReader: ViewModifier {
     } else {
       content
     }
+    #else
+    content
+    #endif
   }
 }

@@ -47,6 +47,7 @@ struct DualPanelLayout<Leading: View, Spine: View, Trailing: View>: View {
 
   static func split(in proxy: GeometryProxy) -> Split {
     let size = proxy.size
+    #if canImport(SwiftUI, _version: 8.1)
     if #available(iOS 27.1, *),
        let fold = proxy.reservedRegions(kind: .division, options: .includeInactive).first {
       let frame = fold.frame
@@ -60,6 +61,7 @@ struct DualPanelLayout<Leading: View, Spine: View, Trailing: View>: View {
         thickness: max(fold.isActive ? foldWidth : 0, spineThickness)
       )
     }
+    #endif
     let isVertical = hingeIsVertical(for: size)
     return Split(isVertical: isVertical, position: (isVertical ? size.width : size.height) / 2, thickness: spineThickness)
   }

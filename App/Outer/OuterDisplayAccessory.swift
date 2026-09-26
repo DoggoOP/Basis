@@ -16,9 +16,21 @@ private struct OuterDisplayAccessory: ViewModifier {
   var hinge: HingeModel
 
   func body(content: Content) -> some View {
+    #if canImport(SwiftUI, _version: 8.1)
     if #available(iOS 27.1, *) {
       CameraAccessoryHost(state: state, hinge: hinge) { content }
-    } else if #available(iOS 27.0, *) {
+    } else {
+      externalAccessory(content)
+    }
+    #else
+    externalAccessory(content)
+    #endif
+  }
+
+  /// iOS 27.0: the system places a non-interactive accessory on another display.
+  @ViewBuilder
+  private func externalAccessory(_ content: Content) -> some View {
+    if #available(iOS 27.0, *) {
       content
         .sceneAccessory {
           ExternalNonInteractiveAccessory {
@@ -35,6 +47,7 @@ private struct OuterDisplayAccessory: ViewModifier {
   }
 }
 
+#if canImport(SwiftUI, _version: 8.1)
 /// A live front-camera session keeps `CameraCaptureAccessory` available on the outer display.
 /// The preview sits hidden behind the blackboard; no camera feed is part of the lesson UI.
 /// The session pauses whenever it isn't needed, including while this iPhone is the probe
@@ -79,3 +92,4 @@ private struct CameraAccessoryHost<Content: View>: View {
     .onDisappear { camera.stop() }
   }
 }
+#endif

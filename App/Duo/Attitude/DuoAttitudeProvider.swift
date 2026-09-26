@@ -54,6 +54,7 @@ final class DuoAttitudeProvider {
 
   /// iOS 27.2 reports whether the app may read motion data.
   var authorizationDescription: String {
+    #if canImport(CoreMotion, _version: 3186)
     if #available(iOS 27.2, *) {
       switch CMMotionManager.authorizationStatus() {
       case .authorized: return "Authorized"
@@ -63,6 +64,7 @@ final class DuoAttitudeProvider {
       @unknown default: return "Unknown"
       }
     }
+    #endif
     return "Not reported before iOS 27.2"
   }
 

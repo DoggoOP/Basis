@@ -1,4 +1,4 @@
-import AVFoundation
+@preconcurrency import AVFoundation
 import Observation
 
 /// A minimal front-camera session, used only to keep the camera capture accessory active.
