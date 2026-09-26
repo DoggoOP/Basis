@@ -29,12 +29,13 @@
             "UIInterfaceOrientationLandscapeRight"
           ],
           "UIUserInterfaceStyle": "Dark",
-          "NSCameraUsageDescription": "Basis Probe uses motion tracking to turn this iPhone into a vector in 3D space. No camera images are shown or stored.",
+          "NSCameraUsageDescription": "Basis uses the camera only in the background: on iPhone Duo it keeps the outer display showing the lesson, and on a probe iPhone it tracks motion in space. No camera images are shown or stored.",
           "NSLocalNetworkUsageDescription": "Basis connects the probe iPhone to the Duo so a real vector can stream into the lessons.",
           "NSBonjourServices": [
             "_basis-probe._tcp",
             "_basis-probe._udp"
-          ]
+          ],
+          "NSMotionUsageDescription": "Basis reads how the whole Duo is rotated, so turning the coordinate frame changes a fixed point's coordinates."
         }
       },
       "platform": "iOS",

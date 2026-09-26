@@ -5,6 +5,7 @@ struct BasisApp: App {
   @State private var hinge = HingeModel()
   @State private var probeLink = HostPeerService()
   @State private var outer = OuterDisplayState()
+  @State private var attitude = DuoAttitudeProvider()
 
   var body: some Scene {
     WindowGroup {
@@ -12,8 +13,9 @@ struct BasisApp: App {
         .environment(hinge)
         .environment(probeLink)
         .environment(outer)
+        .environment(attitude)
         .readsDeviceHinge(into: hinge)
-        .outerDisplayAccessory(outer)
+        .outerDisplayAccessory(outer, hinge: hinge)
         .preferredColorScheme(.dark)
     }
   }

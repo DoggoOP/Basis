@@ -37,8 +37,8 @@ final class ProbeTrackingModel: NSObject {
 
   func stop() { session.pause() }
 
-  /// Makes the current pose the origin of the canonical frame.
-  func recenter() { needsRecenter = true }
+  /// SET ORIGIN: makes the current pose the origin of the shared frame.
+  func setOrigin() { needsRecenter = true }
 
   private var quality: ProbePacket.Quality {
     switch tracking {
@@ -65,6 +65,11 @@ extension ProbeTrackingModel: ARSessionDelegate {
     let raw = calibration.displacement(of: transform)
     let filtered = position.map { $0 + (raw - $0) * Self.smoothing } ?? raw
     position = filtered
-    onUpdate?(ProbePacket(x: filtered.x, y: filtered.y, z: filtered.z, quality: quality, timestamp: frame.timestamp))
+    let q = calibration.relativeRotation(of: transform)
+    onUpdate?(ProbePacket(
+      x: filtered.x, y: filtered.y, z: filtered.z,
+      qx: q.imag.x, qy: q.imag.y, qz: q.imag.z, qw: q.real,
+      quality: quality, timestamp: frame.timestamp
+    ))
   }
 }

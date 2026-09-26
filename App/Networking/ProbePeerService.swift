@@ -29,7 +29,7 @@ final class ProbePeerService: NSObject {
     connectedHost = nil
   }
 
-  /// Sends at most ~30 packets per second, unreliably: a dropped sample is replaced by the next.
+  /// Sends at most ~15 packets per second, unreliably: a dropped sample is replaced by the next.
   func send(_ packet: ProbePacket) {
     guard !session.connectedPeers.isEmpty,
           packet.timestamp - lastSent >= PeerConfiguration.packetInterval,

@@ -1,110 +1,73 @@
 import Foundation
 import Observation
 
-/// One rehearsable step of the judged demo.
-enum DemoStep: Int, CaseIterable {
-  case phoneIsMatrix, singularValues, changeOfBasis, duality, maps, quantum
-
-  var act: DemoAct {
-    switch self {
-    case .phoneIsMatrix, .singularValues: .matrix
-    case .changeOfBasis: .coordinates
-    case .duality: .duality
-    case .maps: .maps
-    case .quantum: .quantum
-    }
-  }
-
-  /// Simulated-hinge pose the step starts from, so the presenter never configures live.
-  var startingPose: Double {
-    switch self {
-    case .phoneIsMatrix: 120
-    case .singularValues: 90
-    case .changeOfBasis: 90
-    case .duality: 90
-    case .maps: 90
-    case .quantum: 180
-    }
-  }
-}
-
+/// The judged demo, 90–120 seconds: five acts, one discreet Next button.
 enum DemoAct: Int, CaseIterable {
-  case matrix = 1, coordinates, duality, maps, quantum
+  case directions = 1, holdThePoint, breakTheBasis, rulers, quantum
 
   var title: String {
     switch self {
-    case .matrix: "Phone = Matrix"
-    case .coordinates: "Change the Basis"
-    case .duality: "Dual Space"
-    case .maps: "Maps Between Spaces"
-    case .quantum: "Quantum"
+    case .directions: "Directions, Not Matrices"
+    case .holdThePoint: "Hold the Point"
+    case .breakTheBasis: "Break the Basis"
+    case .rulers: "The Rulers Behind Coordinates"
+    case .quantum: "Quantum Payoff"
     }
   }
 
   /// What the outer display shows during this act.
   var outerTitle: String {
     switch self {
-    case .matrix: "Outer = Image"
-    case .coordinates: "Outer = Coordinates"
-    case .duality: "Outer = Measurement"
-    case .maps: "Outer = Codomain"
-    case .quantum: "Outer = Outcomes"
+    case .directions: "Outer = Where it lands"
+    case .holdThePoint: "Outer = [P]_B"
+    case .breakTheBasis: "Outer = Reachable region"
+    case .rulers: "Outer = Dual rulers"
+    case .quantum: "Outer = Shots"
     }
   }
 
   var lab: Lab {
     switch self {
-    case .matrix: .matrix
-    case .coordinates: .coordinates
-    case .duality: .duality
-    case .maps: .maps
+    case .directions: .directions
+    case .holdThePoint: .physicalPoint
+    case .breakTheBasis: .conditioning
+    case .rulers: .duality
     case .quantum: .qubit
+    }
+  }
+
+  /// Simulated-hinge pose each act starts from, so the presenter never configures live.
+  var startingPose: Double {
+    switch self {
+    case .directions, .holdThePoint, .breakTheBasis, .rulers: 90
+    case .quantum: 180
     }
   }
 }
 
-/// Linear sequence for judging: one discreet Next button advances through the acts.
 @Observable
 final class DemoCoordinator {
-  private(set) var step = DemoStep.phoneIsMatrix
+  private(set) var act = DemoAct.directions
   /// Changing this rebuilds the current act in its preset state.
   private(set) var resetCount = 0
 
-  var act: DemoAct { step.act }
-  var isLastStep: Bool { step.rawValue == DemoStep.allCases.count - 1 }
-  var isFirstStep: Bool { step.rawValue == 0 }
-
-  var matrixStage: MatrixStage {
-    step == .phoneIsMatrix ? .directions : .transform
-  }
+  var isFirstAct: Bool { act.rawValue == 1 }
+  var isLastAct: Bool { act.rawValue == DemoAct.allCases.count }
 
   func next(hinge: HingeModel) {
-    guard let next = DemoStep(rawValue: step.rawValue + 1) else { return }
-    move(to: next, hinge: hinge)
+    guard let next = DemoAct(rawValue: act.rawValue + 1) else { return }
+    act = next
+    resetAct(hinge: hinge)
   }
 
   func previous(hinge: HingeModel) {
-    guard let previous = DemoStep(rawValue: step.rawValue - 1) else { return }
-    move(to: previous, hinge: hinge)
+    guard let previous = DemoAct(rawValue: act.rawValue - 1) else { return }
+    act = previous
+    resetAct(hinge: hinge)
   }
 
   func resetAct(hinge: HingeModel) {
     resetCount += 1
-    hinge.setSimulatedPose(step.startingPose)
-  }
-
-  func start(hinge: HingeModel) {
-    step = .phoneIsMatrix
-    resetAct(hinge: hinge)
-  }
-
-  private func move(to newStep: DemoStep, hinge: HingeModel) {
-    let changesAct = newStep.act != step.act
-    step = newStep
-    if changesAct {
-      resetAct(hinge: hinge)
-    } else {
-      hinge.setSimulatedPose(newStep.startingPose)
-    }
+    hinge.setSimulatedPose(act.startingPose)
   }
 }

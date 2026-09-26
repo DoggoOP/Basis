@@ -5,11 +5,15 @@ struct PlaneMapping {
   var origin: CGPoint
   /// Points per mathematical unit.
   var unit: CGFloat
+  /// −1 draws the Duo cross-section as seen from above the hinge: a points left (as it does
+  /// on panel A) and b folds toward the viewer. This is a 180° rotation, so orientation is kept.
+  var flip: CGFloat = 1
 
   /// Centers the origin in `size`, fitting `extent` units between the origin and the nearest edge.
-  init(size: CGSize, extent: Double, originOffset: CGSize = .zero) {
+  init(size: CGSize, extent: Double, originOffset: CGSize = .zero, duoTopDown: Bool = false) {
     origin = CGPoint(x: size.width / 2 + originOffset.width, y: size.height / 2 + originOffset.height)
     unit = min(size.width, size.height) / 2 / CGFloat(extent)
+    flip = duoTopDown ? -1 : 1
   }
 
   init(origin: CGPoint, unit: CGFloat) {
@@ -18,11 +22,11 @@ struct PlaneMapping {
   }
 
   func point(_ v: SIMD2<Double>) -> CGPoint {
-    CGPoint(x: origin.x + CGFloat(v.x) * unit, y: origin.y - CGFloat(v.y) * unit)
+    CGPoint(x: origin.x + flip * CGFloat(v.x) * unit, y: origin.y - flip * CGFloat(v.y) * unit)
   }
 
   func vector(at point: CGPoint) -> SIMD2<Double> {
-    SIMD2(Double((point.x - origin.x) / unit), Double((origin.y - point.y) / unit))
+    SIMD2(Double(flip * (point.x - origin.x) / unit), Double(flip * (origin.y - point.y) / unit))
   }
 }
 

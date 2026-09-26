@@ -1,9 +1,12 @@
 import Foundation
 import simd
 
-/// The Duo as a matrix. Columns are the physical panel directions, written in the
-/// frame of panel A: a = (1, 0, 0), b = (cos α, 0, sin α), h = (0, 1, 0).
-/// The 2D cross-section perpendicular to the hinge keeps a = (1, 0), b = (cos α, sin α).
+/// The Duo as a set of travel directions, written in the frame of panel A:
+/// a = (1, 0, 0), b = (cos α, 0, −sin α), h = (0, 1, 0), and B = [a b h].
+///
+/// Hold panel A still and fold panel B toward you: b swings from −a (flat) through −z
+/// (toward the viewer at 90°) to +a (closed). The 2D cross-section perpendicular to the
+/// hinge uses (x, −z), so there a = (1, 0) and b = (cos α, sin α).
 struct BasisGeometry {
   /// Physical opening angle in radians, 0…π.
   var alpha: Double
@@ -32,11 +35,14 @@ struct BasisGeometry {
   // MARK: 3D basis
 
   var a3: SIMD3<Double> { SIMD3(1, 0, 0) }
-  var b3: SIMD3<Double> { SIMD3(cosine, 0, sine) }
+  var b3: SIMD3<Double> { SIMD3(cosine, 0, -sine) }
   var hinge: SIMD3<Double> { SIMD3(0, 1, 0) }
 
   /// B₃ = [a b h].
   var B3: simd_double3x3 { simd_double3x3(columns: (a3, b3, hinge)) }
+
+  /// Projects a 3D vector onto the cross-section perpendicular to the hinge: (x, −z).
+  static func crossSection(_ v: SIMD3<Double>) -> SIMD2<Double> { SIMD2(v.x, -v.z) }
 
   // MARK: Invariants
 

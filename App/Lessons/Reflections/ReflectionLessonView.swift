@@ -19,7 +19,7 @@ struct ReflectionLessonView: View {
       Color.clear
     } trailing: {
       PanelStack(spacing: 18) {
-        PanelTitle("Mirror planes")
+        PanelTitle("The panels are the mirrors")
         HStack(spacing: 24) {
           Readout(title: "Mirror angle φ") {
             Text(composition.mirrorAngleDegrees.degreesText())
@@ -58,7 +58,7 @@ struct ReflectionLessonView: View {
     VStack(alignment: .leading, spacing: 10) {
       HStack(spacing: 10) {
         ForEach(order, id: \.self) { mirror in
-          Button(mirror == .a ? "Reflect A" : "Reflect B") {
+          Button(mirror == .a ? "Reflect in A" : "Reflect in B") {
             withAnimation(Motion.step) { appliedCount += 1 }
           }
           .buttonStyle(.borderedProminent)

@@ -1,42 +1,46 @@
 import Foundation
 
-/// What the outer display shows. Inside is the construction; outside is the consequence.
+/// What the outer display shows. Inside is the construction; outside is the consequence:
+/// "What does this physical construction imply?"
 ///
 /// Every case is data only: the lesson owns the state and the outer display renders a
 /// deterministic projection of it.
 enum OuterScene: Equatable {
   case none
-  case matrixImage(MatrixImageState)
   case coordinates(CoordinateState)
-  case dual(DualState)
+  case reachableRegion(ReachableRegionState)
+  case dualRulers(DualState)
   case mapImage(MapState)
-  case quantum(QuantumState)
-  case orientation(OrientationState)
+  case quantumShots(QuantumState)
+  case flux(FluxState)
 }
 
-/// The image of the unit circle under the physical basis B.
-struct MatrixImageState: Equatable {
-  var openingDegrees: Double
-}
-
-/// The coordinates B⁻¹ p of the fixed physical vector.
+/// Where the route lands, and the compact coordinates of the point.
 struct CoordinateState: Equatable {
   var openingDegrees: Double
-  /// Nil when the basis has collapsed.
+  /// The point in the Duo frame, in steps.
+  var pointInDuo: SIMD3<Double>
+  /// Nil when no unique route exists.
   var coefficients: SIMD3<Double>?
-  /// |Δp| in meters since the reference position.
-  var physicalChange: Double
-  /// Largest coordinate change caused by Δp, or nil when collapsed.
-  var coefficientSwing: Double?
+  /// 0…3 through the route's legs.
+  var progress: Double
+  /// The compact tuple appears only after the route has been traveled.
+  var revealsTuple: Bool
 }
 
-/// The dual measurement grid in V*.
+/// The region reachable with bounded travel, and the effort ellipse (SVD).
+struct ReachableRegionState: Equatable {
+  var openingDegrees: Double
+  var showsNumbers: Bool
+}
+
+/// The dual rulers around the point.
 struct DualState: Equatable {
   var openingDegrees: Double
-  var vector: SIMD2<Double>
+  var point: SIMD2<Double>
 }
 
-/// The codomain W and the image of A.
+/// The output space W and the image of A.
 struct MapState: Equatable {
   var matrix: Matrix2
   var x: SIMD2<Double>
@@ -53,6 +57,6 @@ struct QuantumState: Equatable {
 }
 
 /// The outer face's normal is −n, so its flux has the opposite sign.
-struct OrientationState: Equatable {
+struct FluxState: Equatable {
   var innerFlux: Double
 }

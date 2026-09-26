@@ -40,6 +40,7 @@ struct CalibrationView: View {
       } footer: {
         Text("Inside is the construction; outside is the consequence. If the outer display is unreliable, choose Inner Only and every lesson uses its two-panel fallback. Turn Outer Preview off before judging.")
       }
+      AttitudeDiagnosticsSection()
       Section("Hinge") {
         LabeledContent("Source", value: hinge.source == .device ? "Device hinge" : "Simulated hinge")
         LabeledContent("Status", value: statusText)

@@ -26,7 +26,7 @@ struct GramSchmidtLessonView: View {
       PanelStack(spacing: 18) {
         PanelTitle("A = QR")
         MatrixText(name: "R", rows: [[gs.r.r11, gs.r.r12], [0, gs.r.r22]], tint: Theme.neutral)
-        Readout(title: "Genuinely new", tint: Theme.hinge) {
+        Readout(title: "Genuinely new in b", tint: Theme.hinge) {
           Text(gs.residual.length.fixedText())
         }
         if gs.q2 == nil {

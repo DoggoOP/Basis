@@ -5,17 +5,8 @@ struct ExploreHomeView: View {
     ScrollView {
       VStack(alignment: .leading, spacing: 32) {
         header
-        NavigationLink(value: Route.demo) {
-          Label("Start Demo", systemImage: "play.fill")
-            .font(.title3.weight(.semibold))
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 6)
-        }
-        .buttonStyle(.borderedProminent)
-        .controlSize(.large)
-
         VStack(alignment: .leading, spacing: 12) {
-          Text("Explore")
+          Text("Labs")
             .font(.title2.weight(.bold))
           LazyVGrid(columns: [GridItem(.adaptive(minimum: 260), spacing: 12)], spacing: 12) {
             ForEach(Lab.allCases) { lab in
@@ -53,7 +44,7 @@ struct ExploreHomeView: View {
       .frame(maxWidth: .infinity)
     }
     .background(Theme.background.ignoresSafeArea())
-    .navigationTitle("Basis")
+    .navigationTitle("Explore")
     .toolbarTitleDisplayMode(.inlineLarge)
   }
 
@@ -62,7 +53,7 @@ struct ExploreHomeView: View {
       Text("Math you can hold.")
         .font(.system(.largeTitle, design: .serif).italic())
         .foregroundStyle(Theme.neutral)
-      Text("Two real planes, one real line of intersection, one measurable angle. The phone is the matrix.")
+      Text("These two halves of the phone are two directions you are allowed to travel. The hinge is where they meet.")
         .font(.body)
         .foregroundStyle(.secondary)
     }

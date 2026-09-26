@@ -4,6 +4,7 @@ import SwiftUI
 struct ProbeView: View {
   @State private var tracking = ProbeTrackingModel()
   @State private var peers = ProbePeerService()
+  @Environment(OuterDisplayState.self) private var outer
 
   var body: some View {
     VStack(spacing: 28) {
@@ -12,7 +13,7 @@ struct ProbeView: View {
           .font(.title.weight(.bold))
           .textCase(.uppercase)
           .tracking(2)
-        Label(peers.connectedHost.map { "Connected to \($0)" } ?? "Waiting for Duo…", systemImage: "dot.radiowaves.left.and.right")
+        Label(peers.connectedHost == nil ? "Waiting for Duo…" : "Connected", systemImage: "dot.radiowaves.left.and.right")
           .font(.headline)
           .foregroundStyle(peers.connectedHost == nil ? AnyShapeStyle(.secondary) : AnyShapeStyle(Theme.hinge))
       }
@@ -25,8 +26,9 @@ struct ProbeView: View {
         )
       } else {
         VStack(alignment: .leading, spacing: 10) {
-          Text("p")
-            .font(.system(size: 44, weight: .semibold, design: .serif).italic())
+          Text("You are point P")
+            .font(.title2.weight(.bold))
+            .textCase(.uppercase)
             .foregroundStyle(Theme.probe)
           ForEach(Array(zip(["x", "y", "z"], components)), id: \.0) { axis, value in
             HStack(spacing: 20) {
@@ -42,12 +44,12 @@ struct ProbeView: View {
             .accessibilityElement(children: .combine)
           }
         }
-        StateBadge(title: trackingTitle, tint: tracking.tracking == .good ? Theme.hinge : Theme.first)
-        Text("Hold the phone upright, facing you, then tap Recenter. The rear camera must stay uncovered.")
+        StateBadge(title: "Tracking: " + trackingTitle, tint: tracking.tracking == .good ? Theme.hinge : Theme.first)
+        Text("Hold the phone upright, facing you, at the reference position, then tap Set Origin. Keep the rear camera uncovered.")
           .font(.footnote)
           .foregroundStyle(.secondary)
           .multilineTextAlignment(.center)
-        Button("Recenter", systemImage: "scope") { tracking.recenter() }
+        Button("Set Origin", systemImage: "scope") { tracking.setOrigin() }
           .buttonStyle(.borderedProminent)
           .controlSize(.large)
       }
@@ -59,6 +61,7 @@ struct ProbeView: View {
     .navigationBarTitleDisplayMode(.inline)
     .onAppear {
       tracking.onUpdate = { [peers] packet in peers.send(packet) }
+      outer.isCameraSuspended = true
       tracking.start()
       peers.start()
       UIApplication.shared.isIdleTimerDisabled = true
@@ -66,6 +69,7 @@ struct ProbeView: View {
     .onDisappear {
       tracking.stop()
       peers.stop()
+      outer.isCameraSuspended = false
       UIApplication.shared.isIdleTimerDisabled = false
     }
   }
@@ -78,8 +82,8 @@ struct ProbeView: View {
   private var trackingTitle: String {
     switch tracking.tracking {
     case .starting: "Starting…"
-    case .good: "Tracking good"
-    case .moveSlowly: "Move phone slowly"
+    case .good: "Good"
+    case .moveSlowly: "Move slowly"
     case .unsupported: "Unavailable"
     }
   }

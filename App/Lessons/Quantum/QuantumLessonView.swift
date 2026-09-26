@@ -15,9 +15,9 @@ struct QuantumLessonView: View {
     let recent = shots.recentOutcomes(shownShots: shownShots, pPlus: measurement.pPlus)
     DualPanelLayout {
       PanelStack(spacing: 16) {
-        PanelTitle("Prepare along n_A", tint: Theme.first)
+        PanelTitle("Prepare axis n_A", tint: Theme.first)
         BlochAxisView(openingDegrees: hinge.openingDegrees)
-        Readout(title: "Bloch-axis angle θ") {
+        Readout(title: "Angle between axes θ") {
           Text(measurement.normalAngleDegrees.degreesText())
         }
         EquationMorphView()
@@ -26,13 +26,13 @@ struct QuantumLessonView: View {
       Color.clear
     } trailing: {
       PanelStack(spacing: 16) {
-        PanelTitle("Measure along n_B", tint: Theme.second)
+        PanelTitle("Measure axis n_B", tint: Theme.second)
         if outer.usesOuterDisplay {
           // The presenter chooses the axes inside; the outside shows what nature returns.
           Readout(title: "n_A · n_B", tint: Theme.second) {
             Text(measurement.axisDot.signedText())
           }
-          Text("The outcomes are on the outside.")
+          Text("Each screen's normal is a Bloch axis. What nature returns is on the outside.")
             .font(.callout)
             .foregroundStyle(.secondary)
         } else {
@@ -53,12 +53,13 @@ struct QuantumLessonView: View {
         .buttonStyle(.bordered)
       }
     }
-    .publishesOuterScene(.quantum(QuantumState(
+    .publishesOuterScene(.quantumShots(QuantumState(
       pPlus: measurement.pPlus,
       shotCount: shownShots,
       plusCount: plusCount,
       recentOutcomes: recent
     )))
+    .specialMoment(measurement.regime == .unbiased ? .fiftyFifty : nil)
     .task(id: shownShots == 0) {
       // Shots accumulate steadily from the same seeded sequence after every reset.
       while shownShots < MeasurementShots.count {

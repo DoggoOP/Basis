@@ -5,7 +5,7 @@ enum MathTolerance {
   /// Within this many degrees of 90°, the basis is displayed as exactly orthogonal.
   static let orthogonalSnapDegrees = 1.5
   /// Below this |sin α| the UI treats the basis as collapsed.
-  static let singularSine = 0.03
+  static let singularSine = 0.05
   /// Above this condition number coordinates are too unstable to display.
   static let maximumConditionNumber = 60.0
 

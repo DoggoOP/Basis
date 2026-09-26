@@ -13,7 +13,7 @@ struct LinearMapLessonView: View {
   var body: some View {
     DualPanelLayout {
       PanelStack(spacing: 14) {
-        PanelTitle("Domain V", tint: Theme.first)
+        PanelTitle("Input space V", tint: Theme.first)
         DomainView(matrix: matrix, x: $x, showsKernel: labeledPreset == preset)
         Picker("Map", selection: $preset) {
           ForEach(LinearMapPreset.allCases) { preset in
@@ -31,14 +31,14 @@ struct LinearMapLessonView: View {
         PanelStack(spacing: 18) {
           PanelTitle("Operator A", tint: Theme.second)
           MatrixText(name: "A", rows: [[preset.matrix.m11, preset.matrix.m12], [preset.matrix.m21, preset.matrix.m22]])
-          Text("V → [ phone / A ] → W. The codomain is on the outside.")
+          Text("The phone is the map A: V → W. The output space is on the outside.")
             .font(.callout)
             .foregroundStyle(.secondary)
           Spacer(minLength: 0)
         }
       } else {
         PanelStack(spacing: 14) {
-          PanelTitle("Codomain W", tint: Theme.second)
+          PanelTitle("Output space W", tint: Theme.second)
           CodomainView(matrix: matrix, x: x, showsImage: labeledPreset == preset)
           MapPropertiesView(matrix: preset.matrix, isRevealed: labeledPreset == preset)
         }
@@ -78,7 +78,7 @@ private struct DomainView: View, Animatable {
           context.drawLine(through: .zero, direction: kernel, in: mapping, size: size, color: Theme.dual, lineWidth: 5)
           context.drawLine(through: x, direction: kernel, in: mapping, size: size, color: Theme.neutral.opacity(0.5), lineWidth: 1.5, dash: [6, 6])
           context.draw(
-            Text("ker(A)").font(.system(.callout, design: .serif).italic().weight(.semibold)).foregroundStyle(Theme.dual),
+            Text("This motion changes nothing in W").font(.caption.weight(.bold)).foregroundStyle(Theme.dual),
             at: mapping.point(kernel * 1.45 + SIMD2(0.28, 0))
           )
         }
@@ -146,9 +146,9 @@ struct MapPropertiesView: View {
       row("Rank", "\(properties.rank)")
       row("ker(A)", properties.rank == 2 ? "{0}" : "a line", tint: properties.rank == 2 ? nil : Theme.dual)
       row("im(A)", properties.rank == 2 ? "all of W" : "a line", tint: properties.rank == 2 ? nil : Theme.dual)
-      row("Injective", properties.isInjective ? "yes" : "no")
-      row("Surjective", properties.isSurjective ? "yes" : "no (onto R²)")
-      row("Invertible", properties.isInvertible ? "yes" : "no")
+      row("Injective", properties.isInjective ? "yes · no two inputs collapse" : "no · inputs collapse together")
+      row("Surjective", properties.isSurjective ? "yes · every output reachable" : "no · only a line is reachable")
+      row("Bijective", properties.isInvertible ? "yes · undoable" : "no")
       row("σ₁, σ₂", "\(singular.0.fixedText()), \(singular.1.fixedText())")
     }
     .font(.callout)

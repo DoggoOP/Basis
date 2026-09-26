@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// The judged demo: five acts, one Next button, each act starting from a preset.
+/// The judged demo. The app launches straight here; Explore is one tap away.
 struct DemoView: View {
   @Environment(HingeModel.self) private var hinge
   @Environment(OuterDisplayState.self) private var outer
@@ -8,12 +8,17 @@ struct DemoView: View {
   @State private var explains = false
 
   var body: some View {
-    LabContent(lab: coordinator.act.lab, matrixStage: matrixStage)
+    LabContent(lab: coordinator.act.lab)
       .id("\(coordinator.act.rawValue)-\(coordinator.resetCount)")
       .transition(.opacity)
-      .animation(Motion.reveal, value: coordinator.step)
+      .animation(Motion.reveal, value: coordinator.act)
       .lessonChrome(usesHinge: coordinator.act.lab.usesHinge, explains: explains)
       .toolbar {
+        ToolbarItem(placement: .topBarLeading) {
+          NavigationLink(value: Route.explore) {
+            Label("Explore", systemImage: "square.grid.2x2")
+          }
+        }
         ToolbarItem(placement: .principal) {
           VStack(spacing: 0) {
             Text("Act \(coordinator.act.rawValue) / \(DemoAct.allCases.count)" + (outer.usesOuterDisplay ? " · \(coordinator.act.outerTitle)" : ""))
@@ -28,7 +33,7 @@ struct DemoView: View {
           Button("Previous", systemImage: "chevron.backward") {
             coordinator.previous(hinge: hinge)
           }
-          .disabled(coordinator.isFirstStep)
+          .disabled(coordinator.isFirstAct)
           Button("Reset Act", systemImage: "arrow.counterclockwise") {
             coordinator.resetAct(hinge: hinge)
           }
@@ -36,20 +41,9 @@ struct DemoView: View {
           Button("Next", systemImage: "chevron.forward") {
             coordinator.next(hinge: hinge)
           }
-          .disabled(coordinator.isLastStep)
+          .disabled(coordinator.isLastAct)
         }
       }
-      .onAppear { coordinator.start(hinge: hinge) }
-  }
-
-  /// The demo drives the Matrix act's stage; taps inside the lesson can still advance it.
-  private var matrixStage: Binding<MatrixStage> {
-    Binding {
-      coordinator.matrixStage
-    } set: { newValue in
-      if newValue == .transform, coordinator.step == .phoneIsMatrix {
-        coordinator.next(hinge: hinge)
-      }
-    }
+      .onAppear { hinge.setSimulatedPose(coordinator.act.startingPose) }
   }
 }

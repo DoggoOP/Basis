@@ -33,9 +33,9 @@ enum GramSchmidtStep: Int, CaseIterable, Comparable {
   var title: String {
     switch self {
     case .original: "Oblique basis"
-    case .keepFirst: "Keep the first direction"
-    case .removeProjection: "Remove what's already explained"
-    case .normalize: "Normalize"
+    case .keepFirst: "Keep what you have: q₁ = a"
+    case .removeProjection: "Peel off the part of b you already had"
+    case .normalize: "Normalize what's genuinely new"
     }
   }
 

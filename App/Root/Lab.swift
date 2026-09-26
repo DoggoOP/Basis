@@ -2,49 +2,52 @@ import Foundation
 
 /// The independent labs in Explore Mode.
 enum Lab: String, CaseIterable, Identifiable, Hashable {
-  case matrix, coordinates, duality, maps, orthogonalize, reflections, qubit, orientation, surface
+  case directions, physicalPoint, conditioning, duality, qubit, maps, orthogonalize, reflections, flux, surface
 
   var id: Self { self }
 
   var title: String {
     switch self {
-    case .matrix: "Matrix"
-    case .coordinates: "Coordinates"
-    case .duality: "Duality"
+    case .directions: "Directions"
+    case .physicalPoint: "Hold the Point"
+    case .conditioning: "Break the Basis"
+    case .duality: "Rulers"
+    case .qubit: "Qubit"
     case .maps: "Maps"
     case .orthogonalize: "Orthogonalize"
     case .reflections: "Reflections"
-    case .qubit: "Qubit"
-    case .orientation: "Orientation"
+    case .flux: "Flux"
     case .surface: "Surface"
     }
   }
 
   var subtitle: String {
     switch self {
-    case .matrix: "Inner: basis · Outer: transformed unit circle, SVD, conditioning"
-    case .coordinates: "Inner: vector + changing basis · Outer: coordinates"
-    case .duality: "Inner: primal space · Outer: dual measurement space"
-    case .maps: "Inner: domain · Outer: codomain, kernel, image, rank"
-    case .orthogonalize: "Gram–Schmidt / QR"
-    case .reflections: "Two planes compose into a rotation"
-    case .qubit: "Inner: preparation + basis · Outer: measurement outcomes"
-    case .orientation: "Inner: normal n · Outer: −n and the opposite flux"
+    case .directions: "Coordinates are travel instructions"
+    case .physicalPoint: "Same point, rotated frame, new coordinates"
+    case .conditioning: "Nearly parallel roads, absurd routes"
+    case .duality: "The dual basis measures how much a and b"
+    case .qubit: "Screen normals as Bloch axes"
+    case .maps: "Input inside, output outside"
+    case .orthogonalize: "Remove what you already have"
+    case .reflections: "The panels are the mirrors"
+    case .flux: "Inner normal n, outer normal −n"
     case .surface: "Intrinsic vs extrinsic distance"
     }
   }
 
   var systemImage: String {
     switch self {
-    case .matrix: "square.grid.2x2"
-    case .coordinates: "move.3d"
+    case .directions: "point.topleft.down.to.point.bottomright.curvepath"
+    case .physicalPoint: "iphone.radiowaves.left.and.right"
+    case .conditioning: "angle"
     case .duality: "ruler"
+    case .qubit: "atom"
     case .maps: "function"
     case .orthogonalize: "perspective"
     case .reflections: "arrow.trianglehead.left.and.right.righttriangle.left.righttriangle.right"
-    case .qubit: "atom"
-    case .orientation: "arrow.up.arrow.down"
-    case .surface: "point.topleft.down.to.point.bottomright.curvepath"
+    case .flux: "arrow.up.arrow.down"
+    case .surface: "move.3d"
     }
   }
 
@@ -53,7 +56,7 @@ enum Lab: String, CaseIterable, Identifiable, Hashable {
 }
 
 enum Route: Hashable {
-  case demo
+  case explore
   case lab(Lab)
   case probe
   case calibration

@@ -42,7 +42,7 @@ struct OrientationLessonView: View {
         Spacer(minLength: 0)
       }
     }
-    .publishesOuterScene(.orientation(OrientationState(innerFlux: flux.innerFlux)))
+    .publishesOuterScene(.flux(FluxState(innerFlux: flux.innerFlux)))
   }
 }
 

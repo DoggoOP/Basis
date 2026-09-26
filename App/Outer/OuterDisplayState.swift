@@ -35,6 +35,8 @@ final class OuterDisplayState {
   /// Reported by the scene accessory's availability callback.
   var isAvailable = false
   var path = Path.none
+  /// Set while this device is the probe, so ARKit has the camera to itself.
+  var isCameraSuspended = false
 
   var mode: Mode = Mode(rawValue: UserDefaults.standard.string(forKey: modeKey) ?? "") ?? .automatic {
     didSet { UserDefaults.standard.set(mode.rawValue, forKey: Self.modeKey) }

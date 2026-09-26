@@ -2,9 +2,10 @@ import SwiftUI
 
 /// Places one lesson surface on each side of the hinge, with a narrow spine on the hinge itself.
 ///
-/// Near-square spaces (the unfolded inner display) fold along their long axis, so the
-/// panels sit side by side in portrait and stacked in landscape. Elongated spaces
-/// (conventional iPhones) split their long dimension instead.
+/// On iPhone Duo (iOS 27.1+) the split follows the fold's division reserved region: its
+/// position, orientation, and width. The region is queried even while inactive, so the
+/// hinge orientation stays right when the device is flat. Elsewhere, near-square spaces
+/// fold along their long axis and elongated spaces split their long dimension.
 struct DualPanelLayout<Leading: View, Spine: View, Trailing: View>: View {
   static var spineThickness: CGFloat { 44 }
 
@@ -14,24 +15,53 @@ struct DualPanelLayout<Leading: View, Spine: View, Trailing: View>: View {
 
   var body: some View {
     GeometryReader { proxy in
-      let size = proxy.size
-      if Self.hingeIsVertical(for: size) {
+      let split = Self.split(in: proxy)
+      if split.isVertical {
         HStack(spacing: 0) {
           panel(leading, edge: .trailing)
+            .frame(width: max(split.position - split.thickness / 2, 0))
           spineContainer(edge: .trailing)
-            .frame(width: Self.spineThickness)
+            .frame(width: split.thickness)
           panel(trailing, edge: .leading)
         }
       } else {
         VStack(spacing: 0) {
           panel(leading, edge: .bottom)
+            .frame(height: max(split.position - split.thickness / 2, 0))
           spineContainer(edge: .bottom)
-            .frame(height: Self.spineThickness)
+            .frame(height: split.thickness)
           panel(trailing, edge: .top)
         }
       }
     }
     .background(Theme.background)
+  }
+
+  /// Where the hinge is, in this view's coordinates.
+  struct Split {
+    var isVertical: Bool
+    /// Center of the hinge along the split axis.
+    var position: CGFloat
+    var thickness: CGFloat
+  }
+
+  static func split(in proxy: GeometryProxy) -> Split {
+    let size = proxy.size
+    if #available(iOS 27.1, *),
+       let fold = proxy.reservedRegions(kind: .division, options: .includeInactive).first {
+      let frame = fold.frame
+      let isVertical = frame.height >= frame.width
+      let foldWidth = isVertical
+        ? frame.width + fold.margins.leading + fold.margins.trailing
+        : frame.height + fold.margins.top + fold.margins.bottom
+      return Split(
+        isVertical: isVertical,
+        position: isVertical ? frame.midX : frame.midY,
+        thickness: max(fold.isActive ? foldWidth : 0, spineThickness)
+      )
+    }
+    let isVertical = hingeIsVertical(for: size)
+    return Split(isVertical: isVertical, position: (isVertical ? size.width : size.height) / 2, thickness: spineThickness)
   }
 
   static func hingeIsVertical(for size: CGSize) -> Bool {

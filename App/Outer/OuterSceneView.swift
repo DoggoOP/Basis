@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// The outer display's renderer: a projection of the current lesson state.
-/// No menus, no controls, one visual idea at a time.
+/// No menus, no controls, one visual idea at a time, legible from several feet away.
 struct OuterSceneView: View {
   var state: OuterDisplayState
 
@@ -20,24 +20,24 @@ struct OuterSceneView: View {
   private var content: some View {
     switch state.scene {
     case .none: OuterIdleView()
-    case .matrixImage(let s): OuterMatrixImageView(state: s)
     case .coordinates(let s): OuterCoordinatesView(state: s)
-    case .dual(let s): OuterDualView(state: s)
+    case .reachableRegion(let s): OuterReachableRegionView(state: s)
+    case .dualRulers(let s): OuterDualRulersView(state: s)
     case .mapImage(let s): OuterMapImageView(state: s)
-    case .quantum(let s): OuterQuantumView(state: s)
-    case .orientation(let s): OuterOrientationView(state: s)
+    case .quantumShots(let s): OuterQuantumView(state: s)
+    case .flux(let s): OuterFluxView(state: s)
     }
   }
 
   private var sceneKind: Int {
     switch state.scene {
     case .none: 0
-    case .matrixImage: 1
-    case .coordinates: 2
-    case .dual: 3
+    case .coordinates: 1
+    case .reachableRegion: 2
+    case .dualRulers: 3
     case .mapImage: 4
-    case .quantum: 5
-    case .orientation: 6
+    case .quantumShots: 5
+    case .flux: 6
     }
   }
 }
@@ -53,7 +53,7 @@ private struct OuterLayout<Visual: View, Readouts: View>: View {
     GeometryReader { proxy in
       let isWide = proxy.size.width > proxy.size.height * 1.15
       VStack(alignment: .leading, spacing: 12) {
-        PanelTitle("Outside · \(title)", tint: tint)
+        PanelTitle(title, tint: tint)
         if isWide {
           HStack(spacing: 20) {
             visual.frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -77,90 +77,89 @@ private struct OuterIdleView: View {
         .font(.largeTitle.weight(.bold))
         .textCase(.uppercase)
         .tracking(3)
-      Text("Inside is the construction.\nOutside is the consequence.")
+      Text("Math you can hold.")
         .font(.system(.title3, design: .serif).italic())
-        .multilineTextAlignment(.center)
         .foregroundStyle(.secondary)
     }
     .frame(maxWidth: .infinity, maxHeight: .infinity)
   }
 }
 
-/// B(unit circle): circle at 90°, ellipse when oblique, a segment near singularity.
-private struct OuterMatrixImageView: View {
-  var state: MatrixImageState
-
-  var body: some View {
-    let basis = BasisGeometry(openingDegrees: state.openingDegrees)
-    OuterLayout(title: "B(unit circle)") {
-      MatrixImageCanvas(basis: basis, coefficient: nil, showsSigmaLabels: basis.sigmaMin < 0.95)
-    } readouts: {
-      if basis.isSingular {
-        Text("σ₂ → 0   Rank 1")
-          .font(.system(.title, design: .serif).weight(.semibold))
-          .foregroundStyle(Theme.warning)
-      } else {
-        ValueRow(label: "σ₁", value: basis.sigmaMax.fixedText())
-        ValueRow(label: "σ₂", value: basis.sigmaMin.fixedText())
-      }
-      Readout(title: "Area scale", tint: Theme.hinge) {
-        Text(basis.determinantMagnitude.fixedText())
-      }
-      QualityLabel(quality: basis.quality)
-    }
-  }
-}
-
-/// Only the representation: c = B⁻¹ p.
+/// Where the route lands, and [P]_B once the route has been traveled.
 private struct OuterCoordinatesView: View {
   var state: CoordinateState
 
   var body: some View {
     let basis = BasisGeometry(openingDegrees: state.openingDegrees)
-    OuterLayout(title: "Coordinates in Duo basis") {
-      VStack(alignment: .leading, spacing: 16) {
-        if let c = state.coefficients {
-          CoefficientBar(label: "a", value: c.x, tint: Theme.first)
-          CoefficientBar(label: "b", value: c.y, tint: Theme.second)
-          CoefficientBar(label: "h", value: c.z, tint: Theme.hinge)
-        } else {
-          CollapsedBasisMessage(title: "Basis collapsed", lines: ["B⁻¹ does not exist", "coordinates are no longer unique"])
-        }
-      }
-      .frame(maxHeight: .infinity)
+    OuterLayout(title: "Where the route lands") {
+      RouteMapView(basis: basis, point: state.pointInDuo, coefficients: state.coefficients, progress: state.progress)
     } readouts: {
-      QualityLabel(quality: basis.quality)
-      SensitivityStrip(moved: state.physicalChange, swing: state.coefficientSwing)
+      if let c = state.coefficients {
+        if state.revealsTuple {
+          AlignedStack(spacing: 2) {
+            Text("[P]_B")
+              .font(.system(.title3, design: .serif).italic())
+              .foregroundStyle(.secondary)
+            Text(CoordinateRoute(coefficients: c).tuple(fractionDigits: 2))
+              .font(.system(size: 40, weight: .semibold, design: .rounded))
+              .monospacedDigit()
+              .minimumScaleFactor(0.5)
+              .lineLimit(1)
+              .contentTransition(.numericText())
+          }
+          .transition(.opacity)
+        }
+      } else {
+        CollapsedBasisMessage(title: "No unique route", lines: ["These directions no longer span the space."])
+      }
     }
   }
 }
 
-/// V*: covectors as families of measurement contours around the fixed p.
-private struct OuterDualView: View {
+/// The reachable region squashes as the basis folds, and collapses to a line at singularity.
+private struct OuterReachableRegionView: View {
+  var state: ReachableRegionState
+
+  var body: some View {
+    let basis = BasisGeometry(openingDegrees: state.openingDegrees)
+    OuterLayout(title: "What this basis can reach", tint: Theme.hinge) {
+      ReachableRegionView(basis: basis, showsEffortLabels: state.showsNumbers)
+    } readouts: {
+      if basis.isSingular {
+        Text("One Dimension Lost")
+          .font(.title.weight(.bold))
+          .textCase(.uppercase)
+          .foregroundStyle(Theme.warning)
+      }
+      EffortCaption(basis: basis)
+      if state.showsNumbers {
+        ConditioningNumbers(basis: basis)
+          .transition(.opacity)
+      }
+    }
+  }
+}
+
+/// The dual rulers that read how much a and b a point contains.
+private struct OuterDualRulersView: View {
   var state: DualState
 
   var body: some View {
     let basis = BasisGeometry(openingDegrees: state.openingDegrees)
-    let dual = DualBasis(basis: basis)
-    OuterLayout(title: "Measure", tint: Theme.dual) {
-      CovectorContourView(basis: basis, vector: state.vector, isSingular: dual.inverse == nil)
+    OuterLayout(title: "Dual rulers", tint: Theme.dual) {
+      DualRulerView(basis: basis, point: state.point)
     } readouts: {
-      if let c = dual.measure(state.vector) {
-        Readout(title: "ω¹(p)", tint: Theme.dual) { Text(c.x.fixedText()) }
-        Readout(title: "ω²(p)", tint: Theme.dual) { Text(c.y.fixedText()) }
-      } else {
-        CollapsedBasisMessage(title: "No dual basis", lines: ["B⁻¹ does not exist"])
-      }
+      RulerReadings(readings: DualBasis(basis: basis).measure(state.point))
     }
   }
 }
 
-/// W and im(A).
+/// Output space W and im(A).
 private struct OuterMapImageView: View {
   var state: MapState
 
   var body: some View {
-    OuterLayout(title: "Codomain W", tint: Theme.second) {
+    OuterLayout(title: "Output space W", tint: Theme.second) {
       CodomainView(matrix: state.matrix, x: state.x, showsImage: state.showsLabels)
         .animation(Motion.morph, value: state.matrix)
     } readouts: {
@@ -174,29 +173,29 @@ private struct OuterQuantumView: View {
   var state: QuantumState
 
   var body: some View {
-    OuterLayout(title: "Outcomes", tint: Theme.dual) {
+    OuterLayout(title: "Measurement shots", tint: Theme.dual) {
       VStack(alignment: .leading, spacing: 16) {
-        Readout(title: "P(+)", tint: Theme.dual) {
-          Text(state.pPlus.percentText())
-        }
+        ShotStreamView(outcomes: state.recentOutcomes)
         MeasurementHistogramView(pPlus: state.pPlus, plusCount: state.plusCount, shotCount: state.shotCount)
       }
       .frame(maxHeight: .infinity)
     } readouts: {
-      ShotStreamView(outcomes: state.recentOutcomes)
+      Readout(title: "P(+)", tint: Theme.dual) {
+        Text(state.pPlus.percentText())
+      }
     }
   }
 }
 
 /// The outer face: normal −n, flux −Φ.
-private struct OuterOrientationView: View {
-  var state: OrientationState
+private struct OuterFluxView: View {
+  var state: FluxState
 
   var body: some View {
     OuterLayout(title: "Outer normal −n", tint: Theme.warning) {
       NormalGlyph(pointsOut: false, tint: Theme.warning)
     } readouts: {
-      Readout(title: "Flux Φ₋ₙ", tint: Theme.warning) {
+      Readout(title: "Flux", tint: Theme.warning) {
         Text((-state.innerFlux).signedText(fractionDigits: 1))
       }
       Equation("Φ₋ₙ = −Φₙ", revealed: true, tint: .secondary)
